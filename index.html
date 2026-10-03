@@ -625,17 +625,17 @@ function renderServicos() {
   const g = document.getElementById('grid-servicos');
   if (!ST.servicos.length) { g.innerHTML='<div class="empty-msg">Nenhum serviço cadastrado.</div>'; return; }
   g.innerHTML = ST.servicos.map(s=>`
-    <div class="servico-card" onclick="selSvc('${s.id}','${esc(s.nome)}',${s.preco||0},this)">
+    <div class="servico-card" onclick="selSvc('${s.id}','${esc(s.nome)}',${s.preco||0},this,${s.valor||0})">
       <div class="sel-check"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>
       <div class="servico-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/></svg></div>
       <div class="servico-nome">${esc(s.nome)}</div>
-      <div class="servico-preco">${s.preco?'R$ '+Number(s.preco).toFixed(2).replace('.',','):'Consultar'}</div>
+      <div class="servico-preco">${(s.valor||s.preco)?'R$ '+Number(s.valor||s.preco).toFixed(2).replace('.',','):'Consultar'}</div>
     </div>`).join('');
 }
-function selSvc(id,nome,preco,el){
+function selSvc(id,nome,preco,el,valor){
   document.querySelectorAll('.servico-card').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
-  ST.svcId=id; ST.svcNome=nome; ST.svcValor=preco;
+  ST.svcId=id; ST.svcNome=nome; ST.svcValor=preco||valor||0;
   document.getElementById('btn1').disabled=false;
 }
 
