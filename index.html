@@ -51,7 +51,7 @@ body{
 /* ── HEADER ── */
 header{
   position:sticky;top:0;z-index:100;
-  background:rgba(7,8,10,0.9);
+  background:rgba(5,6,8,0.92);
   backdrop-filter:blur(20px);
   -webkit-backdrop-filter:blur(20px);
   border-bottom:1px solid var(--surface-border);
@@ -79,7 +79,7 @@ main{max-width:520px;margin:0 auto;padding:2rem 1.25rem 5rem;}
 .steps{
   display:flex;align-items:center;
   margin-bottom:2.5rem;
-  background:var(--surface);border:1px solid var(--surface-border);
+  background:rgba(10,11,14,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--surface-border);
   border-radius:var(--radius-lg);padding:1.25rem 1.5rem;
   box-shadow:var(--shadow-sm);
 }
@@ -107,7 +107,9 @@ main{max-width:520px;margin:0 auto;padding:2rem 1.25rem 5rem;}
 
 /* ── GLASS CARD (igual ao painel) ── */
 .glass-card{
-  background:var(--surface);
+  background:rgba(10,11,14,0.85);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
   border:1px solid var(--surface-border);
   border-radius:var(--radius-lg);
   overflow:hidden;
@@ -276,7 +278,7 @@ main{max-width:520px;margin:0 auto;padding:2rem 1.25rem 5rem;}
 
 /* ── RESUMO ── */
 .resumo-card{
-  background:var(--surface);border:1px solid var(--gold-line);
+  background:rgba(10,11,14,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--gold-line);
   border-radius:var(--radius-lg);padding:1.25rem;
   box-shadow:var(--shadow-gold);margin-bottom:1.5rem;
 }
@@ -335,7 +337,7 @@ main{max-width:520px;margin:0 auto;padding:2rem 1.25rem 5rem;}
 }
 .success-sub{font-size:.8rem;color:var(--text-tertiary);line-height:1.6;margin-bottom:2rem;}
 .success-detail{
-  background:var(--surface);border:1px solid var(--gold-line);
+  background:rgba(10,11,14,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--gold-line);
   border-radius:var(--radius-lg);padding:1.25rem;text-align:left;margin-bottom:1.5rem;
   box-shadow:var(--shadow-gold);
 }
@@ -409,6 +411,23 @@ main{max-width:520px;margin:0 auto;padding:2rem 1.25rem 5rem;}
   .steps{padding:1rem;}
   .step-lbl{display:none;}
 }
+
+/* ── BACKGROUND IMAGEM BARBEARIA ── */
+body{position:relative;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-2;
+  background-image:url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1920&q=80');
+  background-size:cover;background-position:center top;
+  filter:brightness(0.15) saturate(0.5);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:-1;
+  background:linear-gradient(180deg,
+    rgba(7,8,10,0.7) 0%,
+    rgba(7,8,10,0.3) 25%,
+    rgba(7,8,10,0.85) 100%
+  );
+}
 </style>
 </head>
 <body>
@@ -417,6 +436,44 @@ main{max-width:520px;margin:0 auto;padding:2rem 1.25rem 5rem;}
   <div class="logo">BarberVision</div>
   <div class="biz-chip" id="header-biz">Carregando...</div>
 </header>
+<!-- HERO -->
+<div id="hero-section" style="display:none;">
+  <div style="
+    position:relative;
+    width:100%;
+    min-height:220px;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    text-align:center;
+    padding:3rem 1.5rem 2rem;
+    overflow:hidden;
+  ">
+    <!-- Linha dourada topo -->
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.6;"></div>
+    <!-- Avatar da barbearia -->
+    <div style="
+      width:72px;height:72px;border-radius:50%;
+      background:linear-gradient(135deg,var(--gold-dark),var(--gold));
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Syncopate',sans-serif;font-size:1.4rem;font-weight:700;
+      color:#07080a;margin-bottom:1rem;
+      box-shadow:0 0 32px rgba(212,175,55,0.3);
+      border:2px solid rgba(212,175,55,0.4);
+    " id="hero-avatar">B</div>
+    <h1 id="hero-biz-name" style="
+      font-family:'Syncopate',sans-serif;
+      font-size:clamp(1.1rem,4vw,1.8rem);font-weight:700;
+      text-transform:uppercase;letter-spacing:.06em;
+      background:linear-gradient(135deg,#FFF5C0,#D4AF37,#8A6D1C);
+      -webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;
+      margin-bottom:.5rem;
+    ">Barbearia</h1>
+    <p style="font-size:.7rem;color:var(--text-tertiary);font-weight:700;text-transform:uppercase;letter-spacing:.2em;">Agende seu horário online</p>
+    <!-- Linha dourada base -->
+    <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.2),transparent);"></div>
+  </div>
+</div>
 
 <div id="not-found">
   <div class="nf-ic"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
@@ -581,6 +638,13 @@ async function init(slug) {
   ST.barbeiros = [...new Set(ST.agendados.filter(a=>a.barbeiro_resp).map(a=>a.barbeiro_resp))];
 
   document.getElementById('main-app').style.display = 'block';
+  document.getElementById('hero-section').style.display = 'block';
+  // Mostrar nome da barbearia no hero
+  const bizName = slug.replace(/-/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+  const heroName = document.getElementById('hero-biz-name');
+  const heroAvatar = document.getElementById('hero-avatar');
+  if(heroName) heroName.textContent = bizName;
+  if(heroAvatar) heroAvatar.textContent = bizName.charAt(0).toUpperCase();
   renderServicos();
 }
 
@@ -760,16 +824,29 @@ async function confirmar(){
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Confirmando...';
   document.getElementById('err-box').style.display='none';
   try{
-    const ag={user_id:ST.userId,cliente_nome:nome,servico:ST.svcNome,valor:ST.svcValor||0,
-      data:ST.data,hora:ST.hora,barbeiro_resp:ST.barbNome==='Qualquer'?'':ST.barbNome,
-      status:'pendente',telefone:tel};
+    const ag={
+      user_id:ST.userId,
+      cliente_nome:nome,
+      servico:ST.svcNome,
+      valor:Number(ST.svcValor)||0,
+      data:ST.data,
+      hora:ST.hora+':00',
+      barbeiro_resp:ST.barbNome==='Qualquer'?'':ST.barbNome,
+      status:'pendente',
+      telefone:tel
+    };
     const {error:e1}=await db.from('agenda').insert([ag]);
-    if(e1) throw e1;
+    if(e1){ console.error('Erro agenda:',e1); throw e1; }
     if(retDias){
       const dr=new Date(ST.data+'T12:00:00');
       dr.setDate(dr.getDate()+retDias);
-      await db.from('retorno').insert([{user_id:ST.userId,cliente_nome:nome,telefone:tel,
-        data_retorno:dr.toISOString().split('T')[0]}]);
+      const {error:retErr}=await db.from('retorno').insert([{
+        user_id:ST.userId,
+        cliente_nome:nome,
+        telefone:tel,
+        data_retorno:dr.toISOString().split('T')[0]
+      }]);
+      if(retErr) console.warn('Retorno não salvo:',retErr);
     }
     document.getElementById('ok-servico').textContent=ST.svcNome;
     document.getElementById('ok-barbeiro').textContent=ST.barbNome==='Qualquer'?'Sem preferência':ST.barbNome;
