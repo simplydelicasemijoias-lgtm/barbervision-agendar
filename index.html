@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <style>
 /* ── TOKENS idênticos ao BarberVision ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -594,7 +594,7 @@ const DIAS  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 let ST = {
   userId:null, slug:'',
   servicos:[], barbeiros:[], agendados:[],
-  svcId:null, svcNome:'', svcValor:0,
+  svcId:null, svcNome:'', svcValor:0, svcsSelecionados:[], // múltiplos serviços
   barbNome:'', data:null, hora:null,
   retDias:null,
   calY:new Date().getFullYear(), calM:new Date().getMonth(),
@@ -689,7 +689,7 @@ function renderServicos() {
   const g = document.getElementById('grid-servicos');
   if (!ST.servicos.length) { g.innerHTML='<div class="empty-msg">Nenhum serviço cadastrado.</div>'; return; }
   g.innerHTML = ST.servicos.map(s=>`
-    <div class="servico-card" onclick="selSvc('${s.id}','${esc(s.nome)}',${s.preco||0},this,${s.valor||0})">
+    <div class="servico-card" onclick="selSvc('${s.id}','${esc(s.nome)}',${s.preco||0},this,${s.valor||0})" data-duracao="${s.duracao||30}">
       <div class="sel-check"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>
       <div class="servico-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/></svg></div>
       <div class="servico-nome">${esc(s.nome)}</div>
@@ -697,10 +697,26 @@ function renderServicos() {
     </div>`).join('');
 }
 function selSvc(id,nome,preco,el,valor){
-  document.querySelectorAll('.servico-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  ST.svcId=id; ST.svcNome=nome; ST.svcValor=preco||valor||0;
-  document.getElementById('btn1').disabled=false;
+  const val = Number(valor||preco||0);
+  const dur = Number(el.dataset.duracao||30);
+  const idx = ST.svcsSelecionados.findIndex(s=>s.id===id);
+  if(idx>=0){
+    ST.svcsSelecionados.splice(idx,1);
+    el.classList.remove('selected');
+  } else {
+    ST.svcsSelecionados.push({id,nome,valor:val,duracao:dur});
+    el.classList.add('selected');
+  }
+  if(ST.svcsSelecionados.length>0){
+    ST.svcId   = ST.svcsSelecionados.map(s=>s.id).join(',');
+    ST.svcNome = ST.svcsSelecionados.map(s=>s.nome).join(' + ');
+    ST.svcValor= ST.svcsSelecionados.reduce((t,s)=>t+s.valor,0);
+  } else { ST.svcId=null; ST.svcNome=''; ST.svcValor=0; }
+  const btn1 = document.getElementById('btn1');
+  btn1.disabled = ST.svcsSelecionados.length===0;
+  if(ST.svcsSelecionados.length>1){
+    btn1.textContent = `Próximo (${ST.svcsSelecionados.length} serviços — R$ ${ST.svcValor.toFixed(2).replace('.',',')})`;
+  } else { btn1.textContent = 'Próximo'; }
 }
 
 // ── BARBEIROS ────────────────────────────────────
@@ -768,12 +784,32 @@ function renderHoras(){
   const horas=[];
   for(let h=8;h<=19;h++){horas.push(String(h).padStart(2,'0')+':00');horas.push(String(h).padStart(2,'0')+':30');}
   horas.push('20:00');
-  const ocup=ST.agendados
+  // Duração total dos serviços selecionados
+  const duracaoTotal = ST.svcsSelecionados.reduce((t,s)=>t+(s.duracao||30),0) || 30;
+  const slotsOcupados = new Set();
+  ST.agendados
     .filter(a=>{
       const md=a.data===ST.data;
       const mb=ST.barbNome==='Qualquer'?true:(a.barbeiro_resp===ST.barbNome||!a.barbeiro_resp);
       return md&&mb;
-    }).map(a=>String(a.hora).substring(0,5));
+    })
+    .forEach(a=>{
+      const horaStr = String(a.hora).substring(0,5);
+      slotsOcupados.add(horaStr);
+      // Bloquear slots anteriores que conflitariam com este agendamento
+      const [hh,mm] = horaStr.split(':').map(Number);
+      const minInicio = hh*60+mm;
+      // Bloqueio reverso: slots que terminariam dentro deste agendamento
+      for(let m2=5; m2<duracaoTotal; m2+=5){
+        const mPrev = minInicio - m2;
+        if(mPrev>=0){
+          const hPrev = Math.floor(mPrev/60);
+          const mPrev2 = mPrev%60;
+          slotsOcupados.add(String(hPrev).padStart(2,'0')+':'+String(mPrev2).padStart(2,'0'));
+        }
+      }
+    });
+  const ocup = Array.from(slotsOcupados);
   const agora=new Date();
   const hojeStr=agora.toISOString().split('T')[0];
   const agoraMin=agora.getHours()*60+agora.getMinutes();
@@ -830,13 +866,17 @@ async function confirmar(){
       servico:ST.svcNome,
       valor:Number(ST.svcValor)||0,
       data:ST.data,
-      hora:ST.hora+':00',
+      hora:ST.hora.length===5 ? ST.hora+':00' : ST.hora,
       barbeiro_resp:ST.barbNome==='Qualquer'?'':ST.barbNome,
       status:'pendente',
       telefone:tel
     };
-    const {error:e1}=await db.from('agenda').insert([ag]);
-    if(e1){ console.error('Erro agenda:',e1); throw e1; }
+    const {data:agData, error:e1}=await db.from('agenda').insert([ag]).select();
+    if(e1){
+      console.error('Erro agenda completo:', JSON.stringify(e1));
+      console.error('Objeto enviado:', JSON.stringify(ag));
+      throw e1;
+    }
     if(retDias){
       const dr=new Date(ST.data+'T12:00:00');
       dr.setDate(dr.getDate()+retDias);
@@ -876,7 +916,7 @@ function maskTel(el){
   el.value=v;
 }
 function resetar(){
-  ST.svcId=null;ST.svcNome='';ST.svcValor=0;ST.barbNome='';ST.data=null;ST.hora=null;retDias=null;
+  ST.svcId=null;ST.svcNome='';ST.svcValor=0;ST.svcsSelecionados=[];ST.barbNome='';ST.data=null;ST.hora=null;retDias=null;
   document.getElementById('f-nome').value='';document.getElementById('f-tel').value='';
   document.getElementById('steps-bar').style.display='flex';
   step=0; goStep(1);
